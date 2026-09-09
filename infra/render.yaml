@@ -87,10 +87,12 @@ services:
     dockerCommand: celery -A config worker --beat -l info
     plan: starter # ADR-013: Celery worker, Starter tier, $7/mo
     region: frankfurt
-    # Redundant with portfolio-backend's — deliberately so. migrate is
-    # idempotent, and this removes any dependency on which of the two
-    # services happens to deploy first.
-    preDeployCommand: python manage.py migrate --noinput
+    # No preDeployCommand here on purpose. Django's migrate has no
+    # cross-process locking — running it here too, concurrently with
+    # portfolio-backend's on the same shared database, caused exactly
+    # that: two simultaneous migrate runs both saw an empty migration
+    # history and collided creating the same tables. migrate runs on
+    # portfolio-backend only; this worker just starts.
     envVars:
       - key: ENVIRONMENT
         value: production
