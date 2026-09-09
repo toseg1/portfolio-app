@@ -46,6 +46,11 @@ jobs:
       CELERY_BROKER_URL: redis://localhost:6379/1
       REDIS_CACHE_URL: redis://localhost:6379/0
       ENABLE_BEAT: "false"
+      EMAIL_DOMAIN: example.invalid
+      EMAIL_FROM_SYSTEM: "Portfolio App <hello@example.invalid>"
+      EMAIL_FROM_ADVISORY: "Test Advisor <advisor@example.invalid>"
+      EMAIL_REPLY_TO: hello@example.invalid
+      EMAIL_OPERATOR_ALERTS: ops@example.invalid
 
     steps:
       - uses: actions/checkout@v4

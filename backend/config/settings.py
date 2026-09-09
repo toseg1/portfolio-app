@@ -6,6 +6,7 @@ django-celery-beat.
 """
 
 import os
+from email.utils import parseaddr
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -26,6 +27,31 @@ if os.environ["ENVIRONMENT"] == "local":
     host = urlparse(os.environ["DATABASE_URL"]).hostname
     if host not in {"localhost", "127.0.0.1", "postgres", "db"}:
         raise ImproperlyConfigured(f"ENVIRONMENT=local but DATABASE_URL points at {host}")
+
+# --- Email sender roles (ADR-029) -----------------------------------------
+# Templates name a role, never an address — configuration maps roles to
+# addresses, so adding a third one later is a config change, not a hunt
+# through templates.
+EMAIL_DOMAIN = os.environ["EMAIL_DOMAIN"]
+EMAIL_FROM_SYSTEM = os.environ["EMAIL_FROM_SYSTEM"]
+EMAIL_FROM_ADVISORY = os.environ["EMAIL_FROM_ADVISORY"]
+EMAIL_REPLY_TO = os.environ["EMAIL_REPLY_TO"]
+EMAIL_OPERATOR_ALERTS = os.environ["EMAIL_OPERATOR_ALERTS"]
+
+# --- Guard 4 (ADR-029): sender domain mismatch refuses to boot -----------
+# A sender address must match a DKIM-authorised domain. Editable at
+# runtime, someone sets a Gmail address and every email silently lands in
+# spam with no error anywhere — so this scans every EMAIL_FROM_* variable
+# rather than naming them, making a third sender role automatically
+# covered instead of a guard rewrite waiting to be forgotten.
+for _var_name, _var_value in os.environ.items():
+    if _var_name.startswith("EMAIL_FROM_"):
+        _, _address = parseaddr(_var_value)
+        if not _address.endswith(f"@{EMAIL_DOMAIN}"):
+            raise ImproperlyConfigured(
+                f"{_var_name}={_var_value!r} does not belong to EMAIL_DOMAIN={EMAIL_DOMAIN!r}"
+            )
+del _var_name, _var_value, _address
 
 INSTALLED_APPS = [
     "django.contrib.admin",
