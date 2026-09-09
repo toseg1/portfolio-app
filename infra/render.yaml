@@ -59,19 +59,20 @@ services:
           name: portfolio-redis
           type: redis
           property: connectionString
-      # Guard 4 (ADR-029) requires these to boot. No real domain/provider
-      # exists yet (13 — Open Questions), so use the same example.invalid
-      # placeholders as .env.example until the domain is bought.
+      # Guard 4 (ADR-029) requires these to boot. Not secrets — a sender
+      # address is visible in every email's From header — so committed
+      # here rather than sync: false, matching .env.example exactly.
+      # Update both places together once the real domain is bought.
       - key: EMAIL_DOMAIN
-        sync: false
+        value: example.invalid
       - key: EMAIL_FROM_SYSTEM
-        sync: false
+        value: "Portfolio App <hello@example.invalid>"
       - key: EMAIL_FROM_ADVISORY
-        sync: false
+        value: "Théo Seguin <theo.seguin@example.invalid>"
       - key: EMAIL_REPLY_TO
-        sync: false
+        value: hello@example.invalid
       - key: EMAIL_OPERATOR_ALERTS
-        sync: false
+        value: theo.seguin@example.invalid
 
   - type: worker
     name: portfolio-celery-worker
@@ -109,15 +110,15 @@ services:
         value: "true" # Guard 1 (ADR-028): true only here, nowhere else
       # Guard 4 (ADR-029) requires these to boot — see portfolio-backend.
       - key: EMAIL_DOMAIN
-        sync: false
+        value: example.invalid
       - key: EMAIL_FROM_SYSTEM
-        sync: false
+        value: "Portfolio App <hello@example.invalid>"
       - key: EMAIL_FROM_ADVISORY
-        sync: false
+        value: "Théo Seguin <theo.seguin@example.invalid>"
       - key: EMAIL_REPLY_TO
-        sync: false
+        value: hello@example.invalid
       - key: EMAIL_OPERATOR_ALERTS
-        sync: false
+        value: theo.seguin@example.invalid
 
   - type: web
     name: portfolio-frontend
