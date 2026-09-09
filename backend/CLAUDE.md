@@ -63,6 +63,16 @@ Every dimension carries `client_id` (NULL = system), `label` (client rows) or
 - Beat runs embedded in the single worker. Guard 1 refuses `--beat` without
   `ENABLE_BEAT=true`.
 
+## Email
+
+Sender-role settings (`EMAIL_DOMAIN`, `EMAIL_FROM_SYSTEM`, `EMAIL_FROM_ADVISORY`,
+`EMAIL_REPLY_TO`, `EMAIL_OPERATOR_ALERTS`) and guard 4 live in `config/settings.py`.
+`EMAIL_BACKEND` points at Mailpit locally (`infra/docker-compose.yml`).
+
+**This is configuration only, not the email module.** `EmailLog`, `SuppressionList`,
+`NotificationPreference`, templates and the actual sending path (Celery, retry,
+suppression-list check) don't exist yet — that's later work, per ADR-029.
+
 ## Market data
 
 Business logic depends on the `MarketDataProvider` interface. **Never import `yfinance`

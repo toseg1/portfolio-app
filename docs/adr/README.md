@@ -32,6 +32,7 @@ the "why" is answerable without leaving the editor.
 | 007 | **Celery Beat for scheduling. Airflow explicitly rejected** — three extra services and ~€20/month to run one daily job. Revisit with Dagster, not Airflow. | [link](https://app.notion.com/p/3d58804e7816815da49bf5bf295ff7de) |
 | 008 | **Quantitative work runs in Celery tasks** with pandas/numpy and PyPortfolioOpt or riskfolio-lib. Frontier weights are dropped inside the task. | [link](https://app.notion.com/p/3d58804e781681a68481d12a1990c4a0) |
 | 027 | **Risk metrics include cash and capital-guaranteed holdings**, treated as zero-volatility assets. The cash share is disclosed beside every metric. No second competing Sharpe. Real estate stays excluded. | [link](https://app.notion.com/p/3d58804e781681919d46d2a5f6fb72e3) |
+| 029 | **Transactional email only** — newsletter, billing receipts/dunning and tenant communication stay outside the application. Sender roles (not addresses) map to `EMAIL_FROM_*` variables; a fourth guard refuses to boot if one doesn't belong to `EMAIL_DOMAIN`. | [link](https://app.notion.com/p/3d68804e7816819797adf962588b7cec) |
 
 ## Reporting
 
@@ -60,10 +61,10 @@ the "why" is answerable without leaving the editor.
 
 | # | Decision | Notion |
 |---|---|---|
-| 013 | **Render, EU region (Frankfurt), hard €30/month ceiling.** No headroom for a staging environment. | [link](https://app.notion.com/p/3d58804e78168194953bf45c4547be4b) |
+| 013 | **Render, EU region (Frankfurt), targeting €30/month.** No headroom for a staging environment; the frontend's SSR requirement pushes the real total to ~$37/mo. | [link](https://app.notion.com/p/3d58804e78168194953bf45c4547be4b) |
 | 014 | **Containerise from day one** so a Hetzner VPS migration is a weekend. Trigger: needing staging, or Postgres outgrowing Basic. | [link](https://app.notion.com/p/3d58804e7816816ba867ed2629b88cbb) |
 | 015 | **Object storage on Cloudflare R2 or Scaleway (EU)** via the S3 API. Render provides none. | [link](https://app.notion.com/p/3d58804e781681fd8f85ee8e8b25bdbe) |
-| 028 | **One monorepo for backend and frontend**, with an explicit `contracts/` boundary. Includes the three local/production safety guards. | [link](https://app.notion.com/p/3d58804e781681f2b3acf7712e34e565) |
+| 028 | **One monorepo for backend and frontend**, with an explicit `contracts/` boundary. Includes three of the four local/production safety guards — the fourth is ADR-029. | [link](https://app.notion.com/p/3d58804e781681f2b3acf7712e34e565) |
 
 ## Data sources
 

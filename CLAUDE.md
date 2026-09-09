@@ -164,9 +164,34 @@ entitlements resolve against the database.
 2. **Environment mismatch refuses to boot** — `ENVIRONMENT=local` plus a non-local
    database host raises on startup.
 3. **Date-keyed lock on every scheduled task** — makes a double-fire harmless.
+4. **Sender domain mismatch refuses to boot** — every `EMAIL_FROM_*` address must
+   belong to `EMAIL_DOMAIN` (ADR-029).
 
 Celery Beat runs embedded in the single worker (`celery worker -B`) to stay inside the
-€30/month budget. **If a second worker is ever added, Beat must move to its own service.**
+Render budget. **If a second worker is ever added, Beat must move to its own service.**
+
+---
+
+## Email (ADR-029)
+
+**Transactional only.** Newsletter, billing receipts/dunning and tenant communication
+are explicitly out of the application — an external tool, Stripe, and nobody,
+respectively. The application never emails a tenant.
+
+**Templates name a role, never an address.** `SYSTEM`, `ADVISORY`, `OPERATOR_ALERTS` —
+configuration maps roles to addresses, enforced by guard 4 above.
+
+**Email is not a secure channel.** Relative figures only — *"+2.4% this month"*, never
+an absolute amount, account reference or holding. The free audit is a short-lived
+tokenised link, never a PDF attachment.
+
+**Local development needs no domain, no provider and no cost.** Mailpit
+(`infra/docker-compose.yml`) is a fake SMTP server with a web inbox at
+`localhost:8025` — every email can be built and checked before a real domain exists.
+
+The email **module** — `EmailLog`, `SuppressionList`, `NotificationPreference`,
+templates, and actual sending — is a separate, later piece of work. What exists so far
+is the sender-role configuration, guard 4, and Mailpit, not the module itself.
 
 ---
 
