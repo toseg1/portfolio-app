@@ -101,7 +101,7 @@ services:
     rootDir: frontend
     dockerfilePath: Dockerfile
     dockerContext: .
-    plan: starter # deviation from ADR-013's $0 line — see header note
+    plan: starter # SSR needed for entitlement-gated pages — ADR-013 (amended)
     region: frankfurt
     envVars:
       - key: NEXT_PUBLIC_API_URL
