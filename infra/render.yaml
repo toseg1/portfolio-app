@@ -27,8 +27,10 @@ services:
     name: portfolio-backend
     runtime: docker
     rootDir: backend
-    dockerfilePath: backend/Dockerfile
-    dockerContext: backend
+    # Relative to rootDir, not the repo root — otherwise Render resolves
+    # this as backend/backend/Dockerfile and fails to clone the build context.
+    dockerfilePath: Dockerfile
+    dockerContext: .
     plan: starter # ADR-013: Django web service, Starter tier, $7/mo
     region: frankfurt
     # No healthCheckPath: config/urls.py has no endpoints yet by design
@@ -62,8 +64,8 @@ services:
     name: portfolio-celery-worker
     runtime: docker
     rootDir: backend
-    dockerfilePath: backend/Dockerfile
-    dockerContext: backend
+    dockerfilePath: Dockerfile
+    dockerContext: .
     dockerCommand: celery -A config worker --beat -l info
     plan: starter # ADR-013: Celery worker, Starter tier, $7/mo
     region: frankfurt
@@ -97,8 +99,8 @@ services:
     name: portfolio-frontend
     runtime: docker
     rootDir: frontend
-    dockerfilePath: frontend/Dockerfile
-    dockerContext: frontend
+    dockerfilePath: Dockerfile
+    dockerContext: .
     plan: starter # deviation from ADR-013's $0 line — see header note
     region: frankfurt
     envVars:
