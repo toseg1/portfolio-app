@@ -1,0 +1,28 @@
+name: Contracts CI
+
+# Placeholder (roadmap item 1): no DRF apps or endpoints exist yet, so
+# there is nothing to generate from. This just validates that
+# contracts/openapi.json is well-formed. Real generate-and-fail-on-drift
+# logic gets wired in once backend endpoints exist.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "contracts/**"
+      - ".github/workflows/contracts-ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "contracts/**"
+      - ".github/workflows/contracts-ci.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate contracts/openapi.json is well-formed
+        run: python3 -c "import json; json.load(open('contracts/openapi.json'))"

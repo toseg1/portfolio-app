@@ -1,0 +1,67 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: portfolio
+          POSTGRES_PASSWORD: portfolio
+          POSTGRES_DB: portfolio
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U portfolio"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      ENVIRONMENT: local
+      DJANGO_DEBUG: "true"
+      DJANGO_SECRET_KEY: ci-test-secret-key
+      DATABASE_URL: postgresql://portfolio:portfolio@localhost:5432/portfolio
+      CELERY_BROKER_URL: redis://localhost:6379/1
+      REDIS_CACHE_URL: redis://localhost:6379/0
+      ENABLE_BEAT: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: ruff
+        run: ruff check .
+
+      - name: mypy
+        run: mypy .
+
+      - name: pytest (real PostgreSQL — never SQLite)
+        run: pytest

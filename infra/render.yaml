@@ -1,0 +1,111 @@
+# Render Blueprint (ADR-028 layout; tiers/region from ADR-013).
+#
+# STILL OPEN, do not guess further here (ADR-028 "Local and production
+# isolation" / ADR-011): the real production domain names, SESSION_COOKIE_DOMAIN,
+# CSRF_TRUSTED_ORIGINS and the apex/api. subdomain split are not decided
+# anywhere yet. Nothing below wires them — settle the domain layout before
+# the first deploy, then add those env vars.
+#
+# Verify against current Render docs before first deploy: the Key Value
+# (Redis) resource `type` and the Postgres `plan` slug below may have been
+# renamed since this was written.
+
+databases:
+  - name: portfolio-postgres
+    plan: basic-256mb # ADR-013: PostgreSQL, Basic tier, ~$6/mo
+    region: frankfurt
+    postgresMajorVersion: "16"
+
+services:
+  - type: redis
+    name: portfolio-redis
+    plan: starter # ADR-013: Key Value (Redis), Starter tier, $10/mo
+    region: frankfurt
+    ipAllowList: [] # no public access — only same-project services connect
+
+  - type: web
+    name: portfolio-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: starter # ADR-013: Django web service, Starter tier, $7/mo
+    region: frankfurt
+    # No healthCheckPath: config/urls.py has no endpoints yet by design
+    # (roadmap item 1 forbids creating one). Render falls back to a
+    # TCP-level check until a real health endpoint exists.
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        sync: false # set to the real api. subdomain once the domain layout is settled
+      - key: DATABASE_URL
+        fromDatabase:
+          name: portfolio-postgres
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: portfolio-redis
+          type: redis
+          property: connectionString
+      - key: REDIS_CACHE_URL
+        fromService:
+          name: portfolio-redis
+          type: redis
+          property: connectionString
+
+  - type: worker
+    name: portfolio-celery-worker
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    dockerCommand: celery -A config worker --beat -l info
+    plan: starter # ADR-013: Celery worker, Starter tier, $7/mo
+    region: frankfurt
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: portfolio-postgres
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: portfolio-redis
+          type: redis
+          property: connectionString
+      - key: REDIS_CACHE_URL
+        fromService:
+          name: portfolio-redis
+          type: redis
+          property: connectionString
+      - key: ENABLE_BEAT
+        value: "true" # Guard 1 (ADR-028): true only here, nowhere else
+
+  - type: web
+    name: portfolio-frontend
+    runtime: docker
+    rootDir: frontend
+    dockerfilePath: frontend/Dockerfile
+    dockerContext: frontend
+    plan: starter # deviation from ADR-013's $0 line — see header note
+    region: frankfurt
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: portfolio-backend
+          type: web
+          property: hostport
+      - key: NEXT_PUBLIC_DEFAULT_LOCALE
+        value: fr-FR

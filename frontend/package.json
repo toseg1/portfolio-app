@@ -1,0 +1,31 @@
+{
+  "name": "portfolio-app-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "check-locale-parity": "node scripts/check-locale-parity.js"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "react-i18next": "^15.0.0",
+    "i18next": "^23.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.0",
+    "eslint-plugin-react": "^7.35.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

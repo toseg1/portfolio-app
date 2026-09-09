@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: portfolio
+      POSTGRES_PASSWORD: portfolio
+      POSTGRES_DB: portfolio
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build:
+      context: ../backend
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - ../.env
+    volumes:
+      - ../backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  worker:
+    build:
+      context: ../backend
+    # --beat (long form, not -B) matches the literal string guard 1 checks
+    # for in config/celery.py.
+    command: celery -A config worker --beat -l info
+    env_file:
+      - ../.env
+    environment:
+      # Guard 1 (ADR-028): true only here, never in the shared .env file —
+      # so a copied .env can never accidentally turn Beat on somewhere else.
+      ENABLE_BEAT: "true"
+    volumes:
+      - ../backend:/app
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
