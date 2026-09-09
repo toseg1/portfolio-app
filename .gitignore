@@ -1,0 +1,53 @@
+# ---------------------------------------------------------------
+# Secrets — nothing here ever gets committed.
+# .env.example IS committed and documents every required key.
+# ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.sqlite3
+
+# Celery Beat local schedule file (we use DatabaseScheduler, but just in case)
+celerybeat-schedule*
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+
+# Local database dumps and restores — these contain real financial data
+*.dump
+*.sql.gz
+backups/
+scratch/
+
+# Uploaded and generated files
+media/
+staticfiles/
+/tmp/
+
+# Editor and OS
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
