@@ -15,6 +15,15 @@ services:
     ports:
       - "6379:6379"
 
+  # Fake SMTP server (ADR-029, 15 — Email & Notifications). Nothing sent
+  # here is ever real — every email in v1 can be built and checked in the
+  # browser before a domain or provider exists.
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # web inbox
+
   web:
     build:
       context: ../backend
@@ -28,6 +37,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - mailpit
 
   worker:
     build:
@@ -46,6 +56,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - mailpit
 
 volumes:
   postgres_data:

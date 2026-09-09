@@ -117,6 +117,18 @@ CELERY_ENABLE_UTC = True
 # they survive Render redeploys (its filesystem is ephemeral) — ADR-028.
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
+# --- Email transport (ADR-029) --------------------------------------------
+# Local: Mailpit (infra/docker-compose.yml) — a fake SMTP server, nothing
+# sent is ever real. Production: a real EU-hosted provider, not chosen yet
+# (13 — Open Questions).
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "1025"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "false").lower() == "true"
+DEFAULT_FROM_EMAIL = EMAIL_FROM_SYSTEM
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
