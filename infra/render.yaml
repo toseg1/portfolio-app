@@ -36,6 +36,10 @@ services:
     # No healthCheckPath: config/urls.py has no endpoints yet by design
     # (roadmap item 1 forbids creating one). Render falls back to a
     # TCP-level check until a real health endpoint exists.
+    # Runs after build, before the new release goes live. Without this,
+    # django-celery-beat's tables never exist in production and the
+    # embedded Beat scheduler crashes silently on every boot.
+    preDeployCommand: python manage.py migrate --noinput
     envVars:
       - key: ENVIRONMENT
         value: production
@@ -83,6 +87,10 @@ services:
     dockerCommand: celery -A config worker --beat -l info
     plan: starter # ADR-013: Celery worker, Starter tier, $7/mo
     region: frankfurt
+    # Redundant with portfolio-backend's — deliberately so. migrate is
+    # idempotent, and this removes any dependency on which of the two
+    # services happens to deploy first.
+    preDeployCommand: python manage.py migrate --noinput
     envVars:
       - key: ENVIRONMENT
         value: production
