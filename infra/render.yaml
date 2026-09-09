@@ -59,6 +59,19 @@ services:
           name: portfolio-redis
           type: redis
           property: connectionString
+      # Guard 4 (ADR-029) requires these to boot. No real domain/provider
+      # exists yet (13 — Open Questions), so use the same example.invalid
+      # placeholders as .env.example until the domain is bought.
+      - key: EMAIL_DOMAIN
+        sync: false
+      - key: EMAIL_FROM_SYSTEM
+        sync: false
+      - key: EMAIL_FROM_ADVISORY
+        sync: false
+      - key: EMAIL_REPLY_TO
+        sync: false
+      - key: EMAIL_OPERATOR_ALERTS
+        sync: false
 
   - type: worker
     name: portfolio-celery-worker
@@ -94,6 +107,17 @@ services:
           property: connectionString
       - key: ENABLE_BEAT
         value: "true" # Guard 1 (ADR-028): true only here, nowhere else
+      # Guard 4 (ADR-029) requires these to boot — see portfolio-backend.
+      - key: EMAIL_DOMAIN
+        sync: false
+      - key: EMAIL_FROM_SYSTEM
+        sync: false
+      - key: EMAIL_FROM_ADVISORY
+        sync: false
+      - key: EMAIL_REPLY_TO
+        sync: false
+      - key: EMAIL_OPERATOR_ALERTS
+        sync: false
 
   - type: web
     name: portfolio-frontend
