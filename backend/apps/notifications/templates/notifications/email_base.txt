@@ -1,0 +1,4 @@
+{% block content %}{% endblock %}
+
+--
+{% include "notifications/_email_footer.txt" %}

@@ -1,7 +1,8 @@
 """Django settings for the portfolio-app backend.
 
-Scaffold only (ADR-028, roadmap item 1) — no apps beyond `config` exist
-yet, so INSTALLED_APPS carries only Django's own defaults plus
+Mostly scaffold (ADR-028, roadmap item 1) — `apps.notifications` (roadmap
+item 1.5, ADR-029) is the first app beyond `config`; the rest of
+`INSTALLED_APPS` is still just Django's own defaults plus
 django-celery-beat.
 """
 
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_celery_beat",
+    "apps.notifications",
 ]
 
 MIDDLEWARE = [
@@ -128,6 +130,16 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "false").lower() == "true"
 DEFAULT_FROM_EMAIL = EMAIL_FROM_SYSTEM
+
+# --- Legal footer (15 — Email & Notifications) -----------------------
+# Empty until CIF registration completes. Rendered into the shared email
+# footer partial (apps/notifications) rather than typed into templates,
+# so it doesn't need editing in two languages the moment registration
+# finishes.
+LEGAL_ENTITY_NAME = os.environ.get("LEGAL_ENTITY_NAME", "")
+LEGAL_ENTITY_ADDRESS = os.environ.get("LEGAL_ENTITY_ADDRESS", "")
+CIF_REGISTRATION_NUMBER = os.environ.get("CIF_REGISTRATION_NUMBER", "")
+ORIAS_NUMBER = os.environ.get("ORIAS_NUMBER", "")
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
