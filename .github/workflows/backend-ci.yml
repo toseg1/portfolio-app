@@ -46,6 +46,7 @@ jobs:
       CELERY_BROKER_URL: redis://localhost:6379/1
       REDIS_CACHE_URL: redis://localhost:6379/0
       ENABLE_BEAT: "false"
+      FRONTEND_URL: http://localhost:3000
       EMAIL_DOMAIN: example.invalid
       EMAIL_FROM_SYSTEM: "Portfolio App <hello@example.invalid>"
       EMAIL_FROM_ADVISORY: "Test Advisor <advisor@example.invalid>"

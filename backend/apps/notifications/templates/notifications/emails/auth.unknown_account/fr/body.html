@@ -1,0 +1,8 @@
+{% extends "notifications/email_base.html" %}
+{% block subject %}Vous n'avez pas encore de compte{% endblock %}
+{% block content %}
+<p>Quelqu'un a demandé une réinitialisation de mot de passe pour cette adresse
+e-mail, mais aucun compte n'existe encore.</p>
+<p><a href="{{ url }}">Créer un compte</a></p>
+<p>Si ce n'était pas vous, vous pouvez ignorer cet e-mail.</p>
+{% endblock %}

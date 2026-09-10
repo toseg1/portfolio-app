@@ -1,0 +1,9 @@
+{% extends "notifications/email_base.txt" %}
+{% block content %}
+Someone requested a password reset for this email address, but there's no account
+here yet.
+
+{{ url }}
+
+If this wasn't you, you can ignore this email.
+{% endblock %}

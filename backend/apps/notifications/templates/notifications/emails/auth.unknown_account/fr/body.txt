@@ -1,0 +1,9 @@
+{% extends "notifications/email_base.txt" %}
+{% block content %}
+Quelqu'un a demandé une réinitialisation de mot de passe pour cette adresse
+e-mail, mais aucun compte n'existe encore.
+
+{{ url }}
+
+Si ce n'était pas vous, vous pouvez ignorer cet e-mail.
+{% endblock %}

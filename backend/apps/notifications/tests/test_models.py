@@ -1,6 +1,7 @@
 import pytest
 from django.db import IntegrityError, transaction
 
+from apps.accounts.tests.factories import make_user
 from apps.notifications.constants import EmailCategory, EmailStatus
 from apps.notifications.models import EmailLog, NotificationPreference, SuppressionList
 
@@ -69,27 +70,31 @@ class TestSuppressionList:
 
 class TestNotificationPreference:
     def test_transactional_category_cannot_be_disabled(self):
+        user = make_user()
         with pytest.raises(IntegrityError):
             with transaction.atomic():
                 NotificationPreference.objects.create(
-                    user_id=1, category=EmailCategory.ACCOUNT_INTEGRITY, is_enabled=False
+                    user=user, category=EmailCategory.ACCOUNT_INTEGRITY, is_enabled=False
                 )
 
     def test_consent_category_cannot_be_disabled(self):
+        user = make_user()
         with pytest.raises(IntegrityError):
             with transaction.atomic():
                 NotificationPreference.objects.create(
-                    user_id=1, category=EmailCategory.CONSENT, is_enabled=False
+                    user=user, category=EmailCategory.CONSENT, is_enabled=False
                 )
 
     def test_optional_category_can_be_disabled(self):
+        user = make_user()
         pref = NotificationPreference.objects.create(
-            user_id=1, category=EmailCategory.ASYNC_COMPLETION, is_enabled=False
+            user=user, category=EmailCategory.ASYNC_COMPLETION, is_enabled=False
         )
         assert pref.pk is not None
 
     def test_unique_per_user_and_category(self):
-        NotificationPreference.objects.create(user_id=1, category=EmailCategory.DIGEST)
+        user = make_user()
+        NotificationPreference.objects.create(user=user, category=EmailCategory.DIGEST)
         with pytest.raises(IntegrityError):
             with transaction.atomic():
-                NotificationPreference.objects.create(user_id=1, category=EmailCategory.DIGEST)
+                NotificationPreference.objects.create(user=user, category=EmailCategory.DIGEST)

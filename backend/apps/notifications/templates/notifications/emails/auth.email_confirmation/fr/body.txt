@@ -1,0 +1,8 @@
+{% extends "notifications/email_base.txt" %}
+{% block content %}
+Bienvenue. Confirmez votre adresse e-mail pour finaliser la création de votre compte.
+
+{{ url }}
+
+Si vous n'avez pas créé de compte, vous pouvez ignorer cet e-mail.
+{% endblock %}

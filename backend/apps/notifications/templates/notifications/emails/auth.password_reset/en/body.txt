@@ -1,0 +1,8 @@
+{% extends "notifications/email_base.txt" %}
+{% block content %}
+We received a request to reset your password.
+
+{{ url }}
+
+If you didn't request this, you can ignore this email — your password won't change.
+{% endblock %}

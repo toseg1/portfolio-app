@@ -8,7 +8,8 @@ Apps mirror the module list. Do not create apps outside this set without asking.
 
 ```
 config/        settings, urls, celery app
-accounts/      User, Client, Profile, auth
+accounts/      User (email-only, no username), auth (allauth/axes/admin-MFA
+               wiring) — roadmap item 1. Client/Profile land with later items.
 advisors/      AdvisorLink, AccessAuditLog, impersonation context
 portfolio/     Portfolio, Account, Transaction, position derivation
 instruments/   Instrument, PriceHistory, EtfHolding, IsinTickerMapping, FxRate
@@ -80,13 +81,18 @@ The `notifications` app (roadmap item 1.5, ADR-029) is the email module: `EmailL
 path with retry/backoff and a suppression-list check (`tasks.py`). Callers never touch
 SMTP or the suppression list directly — call `queue_email(...)`.
 
-`EmailLog.user_id` / `client_id` and `NotificationPreference.user_id` are plain
-columns, not real `ForeignKey`s yet, because `accounts.User` / `accounts.Client` don't
-exist yet (this item is ordered before auth). Add the real FK + migration once they do.
+`EmailLog.user` / `NotificationPreference.user` are real `ForeignKey(accounts.User)`
+now (roadmap item 1). `EmailLog.client_id` stays a plain column — `accounts.Client`
+doesn't exist yet. Add that real FK + migration once it does.
 
-Concrete v1 email templates (password reset, advisor invitation, etc.) don't exist
-yet — each lands with the feature that triggers it, extending
-`notifications/email_base.html` / `.txt`.
+`apps.accounts.adapters.AccountAdapter` (`ACCOUNT_ADAPTER`) is the concrete example
+of "callers never touch SMTP directly": every allauth email (signup confirmation,
+password reset, account-already-exists) is intercepted and routed through
+`queue_email(...)`, using templates under
+`notifications/templates/notifications/emails/auth.*/`.
+
+Remaining v1 templates (advisor invitation, etc.) don't exist yet — each lands with
+the feature that triggers it, extending `notifications/email_base.html` / `.txt`.
 
 ## Market data
 
@@ -99,6 +105,10 @@ adapter layer.
 - Versioned under `/api/v1/`, snake_case JSON.
 - Errors return `{detail, code, field_errors}` — `code` is translatable.
   **The API never returns a user-facing sentence.**
+  - Exception: `/api/v1/auth/*` and `/api/v1/account/*` are django-allauth's own
+    `allauth.headless` views (ADR-011) — they return allauth's own
+    `{status, data, meta, errors}` envelope, not this shape. Deliberate,
+    scoped to those two prefixes — do not reshape it.
 - Advisor context: the viewed client id arrives on every request and is validated
   every time.
 

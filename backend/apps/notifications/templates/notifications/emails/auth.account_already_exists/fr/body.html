@@ -1,0 +1,8 @@
+{% extends "notifications/email_base.html" %}
+{% block subject %}Quelqu'un a tenté de s'inscrire avec votre e-mail{% endblock %}
+{% block content %}
+<p>Quelqu'un vient d'essayer de créer un compte avec cette adresse e-mail, mais vous en avez déjà un.</p>
+<p>Si c'était vous et que vous avez oublié votre mot de passe :</p>
+<p><a href="{{ url }}">Réinitialiser votre mot de passe</a></p>
+<p>Si ce n'était pas vous, aucune action n'est nécessaire.</p>
+{% endblock %}
