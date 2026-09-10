@@ -1,0 +1,7 @@
+{% extends "notifications/email_base.html" %}
+{% block subject %}Confirm your email address{% endblock %}
+{% block content %}
+<p>Welcome. Confirm your email address to finish setting up your account.</p>
+<p><a href="{{ url }}">Confirm email address</a></p>
+<p>If you didn't create an account, you can ignore this email.</p>
+{% endblock %}

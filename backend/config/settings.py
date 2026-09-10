@@ -1,9 +1,7 @@
 """Django settings for the portfolio-app backend.
 
-Mostly scaffold (ADR-028, roadmap item 1) — `apps.notifications` (roadmap
-item 1.5, ADR-029) is the first app beyond `config`; the rest of
-`INSTALLED_APPS` is still just Django's own defaults plus
-django-celery-beat.
+`apps.notifications` (roadmap item 1.5, ADR-029) and `apps.accounts`
+(roadmap item 1, ADR-011) are the two apps beyond `config` so far.
 """
 
 import os
@@ -61,18 +59,37 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     "django_celery_beat",
+    "allauth",
+    "allauth.account",
+    "allauth.mfa",
+    "allauth.headless",
+    "axes",
+    "corsheaders",
     "apps.notifications",
+    "apps.accounts",
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
+    "apps.accounts.middleware.AdminMfaMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "axes.middleware.AxesMiddleware",
+]
+
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -149,3 +166,84 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# --- Auth (ADR-011, roadmap item 1) ---------------------------------------
+AUTH_USER_MODEL = "accounts.User"
+
+# Email-only login, no username field anywhere (confirmed with the user).
+# ACCOUNT_USER_MODEL_USERNAME_FIELD=None is required, not just cosmetic —
+# without it, allauth's own signup form unconditionally does
+# User._meta.get_field("username") and crashes, since this User model has
+# no such field at all.
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*"]
+# Signup does not fully authenticate until the emailed link is clicked
+# (confirmed with the user).
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_ADAPTER = "apps.accounts.adapters.AccountAdapter"
+# allauth's own "login_failed" rate limit and axes below share the same
+# authenticate() call, but allauth's default (5 failures/5min/key) is
+# *tighter* than AXES_FAILURE_LIMIT and, critically, keyed independently of
+# axes' own bookkeeping — once allauth's own limiter trips first on a repeat
+# request, it short-circuits *before* Django's authenticate() (and axes)
+# ever run, silently masking axes' progressive-backoff response for every
+# request after the first lockout. Loosened here so axes is the layer that
+# actually fires for password login; allauth's own limiter still backstops
+# MFA-code/recovery-code guessing, a path axes never sees.
+ACCOUNT_RATE_LIMITS = {"login_failed": "30/m/ip,30/m/key"}
+
+MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
+MFA_TOTP_ISSUER = os.environ.get("MFA_TOTP_ISSUER", "Portfolio App")
+
+# This backend is API-only: no allauth server-rendered account pages, no
+# mobile/native "app" token client (deferred — see the Open Questions
+# database's "Mobile applications" entry). Only the cookie-based "browser"
+# client is enabled; config/urls.py mounts its views under /api/v1/ itself
+# rather than allauth's own hardcoded browser/v1/ prefix.
+HEADLESS_ONLY = True
+HEADLESS_CLIENTS = ("browser",)
+HEADLESS_FRONTEND_URLS = {
+    "account_confirm_email": f"{os.environ['FRONTEND_URL']}/auth/verify-email/{{key}}",
+    "account_reset_password_from_key": f"{os.environ['FRONTEND_URL']}/auth/reset-password/{{key}}",
+    # Bare (no token) URLs allauth links to from secondary emails — the
+    # "you don't have an account" and "someone tried to sign up as you"
+    # notices, respectively (HEADLESS_ONLY raises loudly if any URL an
+    # enabled flow can reach isn't listed here — better than a silent 500).
+    "account_signup": f"{os.environ['FRONTEND_URL']}/auth/signup",
+    "account_reset_password": f"{os.environ['FRONTEND_URL']}/auth/reset-password",
+}
+
+# --- Login throttling (ADR-011: "per IP and per account, progressive
+# backoff") -----------------------------------------------------------------
+AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]
+AXES_FAILURE_LIMIT = 5
+AXES_RESET_ON_SUCCESS = True
+AXES_COOLOFF_TIME = "apps.accounts.axes_config.get_cooloff"
+AXES_LOCKOUT_CALLABLE = "apps.accounts.axes_config.lockout_response"
+AXES_USERNAME_CALLABLE = "apps.accounts.axes_config.get_axes_username"
+
+# --- Cookies (ADR-011: httpOnly + Secure + SameSite=Lax + CSRF) -----------
+# Secure stays unconditionally True, including locally: Chrome/Firefox treat
+# http://localhost as a potentially-trustworthy origin, so Secure cookies
+# still set/send correctly over plain HTTP there.
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_DOMAIN = os.environ.get("SESSION_COOKIE_DOMAIN") or None
+
+# Must stay JS-readable (NOT httpOnly) — the frontend API client reads this
+# cookie to set the X-CSRFToken header on every mutating request.
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
+
+# --- CORS ------------------------------------------------------------------
+# Not named in ADR-011 itself, but a hard requirement underneath it: the
+# frontend calls the API cross-origin with credentials: "include". SameSite
+# governs whether the cookie attaches; CORS separately governs whether the
+# browser lets JS read the response at all.
+CORS_ALLOWED_ORIGINS = [os.environ["FRONTEND_URL"]]
+CORS_ALLOW_CREDENTIALS = True

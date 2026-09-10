@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Set up two-factor authentication</title>
+</head>
+<body>
+  <h1>Set up two-factor authentication</h1>
+  <p>Admin access requires an authenticator app. Scan this code, then enter the 6-digit code it shows.</p>
+  {{ totp_svg|safe }}
+  <p>Or enter this URL manually: <code>{{ totp_url }}</code></p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Activate</button>
+  </form>
+</body>
+</html>

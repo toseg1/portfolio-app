@@ -1,11 +1,9 @@
 """EmailLog, SuppressionList, NotificationPreference (04.8).
 
-FK note: EmailLog.user_id / client_id and NotificationPreference.user_id
-should reference accounts.User / accounts.Client, but this item is
-ordered before the accounts app exists (12 — Roadmap & Phasing, item
-1.5's "Before auth" note). They are plain columns for now — add the real
-ForeignKey and a migration once accounts.User / accounts.Client exist.
-Do not let this be forgotten.
+FK note: `accounts.User` now exists (roadmap item 1) — every `user_id` below
+(`EmailLog`, `NotificationPreference`) is a real ForeignKey. `EmailLog.client_id`
+stays a plain column: `accounts.Client` doesn't exist yet. Add that real
+ForeignKey and a migration once it does — do not let it be forgotten.
 """
 
 from django.db import models
@@ -34,7 +32,9 @@ class EmailLog(models.Model):
     """
 
     recipient_email = CITextField()
-    user_id = models.BigIntegerField(null=True, blank=True)
+    user = models.ForeignKey(
+        "accounts.User", null=True, blank=True, on_delete=models.SET_NULL, related_name="email_logs"
+    )
     client_id = models.UUIDField(null=True, blank=True)
 
     category = models.CharField(max_length=40, choices=EmailCategory.choices)
@@ -67,7 +67,7 @@ class EmailLog(models.Model):
         db_table = "email_log"
         indexes = [
             models.Index(fields=["recipient_email", "-queued_at"], name="email_log_recipient_idx"),
-            models.Index(fields=["user_id", "-queued_at"], name="email_log_user_idx"),
+            models.Index(fields=["user", "-queued_at"], name="email_log_user_idx"),
             models.Index(fields=["category", "-queued_at"], name="email_log_category_idx"),
             models.Index(
                 fields=["status"],
@@ -121,7 +121,9 @@ class SuppressionList(models.Model):
 class NotificationPreference(models.Model):
     """Per user, per category. Transactional categories cannot be disabled."""
 
-    user_id = models.BigIntegerField()
+    user = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE, related_name="notification_preferences"
+    )
     category = models.CharField(max_length=40, choices=EmailCategory.choices)
     is_enabled = models.BooleanField(default=True)
     frequency = models.CharField(
@@ -135,7 +137,7 @@ class NotificationPreference(models.Model):
         db_table = "notification_preference"
         constraints = [
             models.UniqueConstraint(
-                fields=["user_id", "category"], name="uniq_notification_preference_user_category"
+                fields=["user", "category"], name="uniq_notification_preference_user_category"
             ),
             models.CheckConstraint(
                 condition=~models.Q(category__in=list(NON_OPTIONAL_CATEGORIES))

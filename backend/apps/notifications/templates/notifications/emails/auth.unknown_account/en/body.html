@@ -1,0 +1,8 @@
+{% extends "notifications/email_base.html" %}
+{% block subject %}You don't have an account yet{% endblock %}
+{% block content %}
+<p>Someone requested a password reset for this email address, but there's no account
+here yet.</p>
+<p><a href="{{ url }}">Create an account</a></p>
+<p>If this wasn't you, you can ignore this email.</p>
+{% endblock %}

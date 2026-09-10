@@ -1,0 +1,7 @@
+{% extends "notifications/email_base.html" %}
+{% block subject %}Réinitialisez votre mot de passe{% endblock %}
+{% block content %}
+<p>Nous avons reçu une demande de réinitialisation de votre mot de passe.</p>
+<p><a href="{{ url }}">Réinitialiser votre mot de passe</a></p>
+<p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail — votre mot de passe ne sera pas modifié.</p>
+{% endblock %}

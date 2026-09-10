@@ -4,3 +4,6 @@ django-celery-beat>=2.6,<3.0
 psycopg[binary]>=3.1,<4.0
 dj-database-url>=2.2,<3.0
 gunicorn>=22.0,<23.0
+django-allauth[mfa]>=65.0,<66.0
+django-axes>=8.0,<9.0
+django-cors-headers>=4.4,<5.0

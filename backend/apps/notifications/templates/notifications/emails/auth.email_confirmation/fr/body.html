@@ -1,0 +1,7 @@
+{% extends "notifications/email_base.html" %}
+{% block subject %}Confirmez votre adresse e-mail{% endblock %}
+{% block content %}
+<p>Bienvenue. Confirmez votre adresse e-mail pour finaliser la création de votre compte.</p>
+<p><a href="{{ url }}">Confirmer l'adresse e-mail</a></p>
+<p>Si vous n'avez pas créé de compte, vous pouvez ignorer cet e-mail.</p>
+{% endblock %}

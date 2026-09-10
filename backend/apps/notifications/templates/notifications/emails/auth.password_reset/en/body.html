@@ -1,0 +1,7 @@
+{% extends "notifications/email_base.html" %}
+{% block subject %}Reset your password{% endblock %}
+{% block content %}
+<p>We received a request to reset your password.</p>
+<p><a href="{{ url }}">Reset your password</a></p>
+<p>If you didn't request this, you can ignore this email — your password won't change.</p>
+{% endblock %}

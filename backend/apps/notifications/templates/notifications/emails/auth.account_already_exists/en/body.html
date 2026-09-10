@@ -1,0 +1,8 @@
+{% extends "notifications/email_base.html" %}
+{% block subject %}Someone tried to sign up with your email{% endblock %}
+{% block content %}
+<p>Someone just tried to create an account using this email address, but you already have one.</p>
+<p>If this was you and you've forgotten your password:</p>
+<p><a href="{{ url }}">Reset your password</a></p>
+<p>If it wasn't you, no action is needed.</p>
+{% endblock %}

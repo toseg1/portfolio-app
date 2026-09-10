@@ -1,0 +1,10 @@
+{% extends "notifications/email_base.txt" %}
+{% block content %}
+Quelqu'un vient d'essayer de créer un compte avec cette adresse e-mail, mais vous en avez déjà un.
+
+Si c'était vous et que vous avez oublié votre mot de passe :
+
+{{ url }}
+
+Si ce n'était pas vous, aucune action n'est nécessaire.
+{% endblock %}
