@@ -1,0 +1,15 @@
+{% load i18n %}<p>
+  {% blocktranslate %}This email is informational and is not personalised investment advice.{% endblocktranslate %}
+</p>
+{% if legal_entity_name %}
+<p>
+  {{ legal_entity_name }}{% if legal_entity_address %} &mdash; {{ legal_entity_address }}{% endif %}
+  {% if cif_registration_number %}<br>{% translate "CIF registration:" %} {{ cif_registration_number }}{% endif %}
+  {% if orias_number %}<br>ORIAS: {{ orias_number }}{% endif %}
+</p>
+{% endif %}
+{% if unsubscribe_url %}
+<p>
+  <a href="{{ unsubscribe_url }}">{% translate "Unsubscribe" %}</a>
+</p>
+{% endif %}

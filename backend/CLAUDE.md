@@ -19,7 +19,12 @@ reports/       ReportRun, StoredDocument, PDF templates
 imports/       broker_parsers registry, ImportBatch
 realestate/    Property, Unit, Lease, Loan, CashflowEntry, Valuation, Liability
 billing/       Feature, Plan, Subscription, EntitlementGrant, StripeEvent
+notifications/ EmailLog, SuppressionList, NotificationPreference, sending (ADR-029)
 ```
+
+`notifications` sits outside the product module list above — it's infrastructure the
+other modules call into (roadmap item 1.5), added by asking first since it wasn't in
+the original set.
 
 ## Money
 
@@ -69,9 +74,19 @@ Sender-role settings (`EMAIL_DOMAIN`, `EMAIL_FROM_SYSTEM`, `EMAIL_FROM_ADVISORY`
 `EMAIL_REPLY_TO`, `EMAIL_OPERATOR_ALERTS`) and guard 4 live in `config/settings.py`.
 `EMAIL_BACKEND` points at Mailpit locally (`infra/docker-compose.yml`).
 
-**This is configuration only, not the email module.** `EmailLog`, `SuppressionList`,
-`NotificationPreference`, templates and the actual sending path (Celery, retry,
-suppression-list check) don't exist yet — that's later work, per ADR-029.
+The `notifications` app (roadmap item 1.5, ADR-029) is the email module: `EmailLog`,
+`SuppressionList`, `NotificationPreference` (04.8), sender-role resolution
+(`senders.py`), the queueing entry point (`services.queue_email`) and the Celery send
+path with retry/backoff and a suppression-list check (`tasks.py`). Callers never touch
+SMTP or the suppression list directly — call `queue_email(...)`.
+
+`EmailLog.user_id` / `client_id` and `NotificationPreference.user_id` are plain
+columns, not real `ForeignKey`s yet, because `accounts.User` / `accounts.Client` don't
+exist yet (this item is ordered before auth). Add the real FK + migration once they do.
+
+Concrete v1 email templates (password reset, advisor invitation, etc.) don't exist
+yet — each lands with the feature that triggers it, extending
+`notifications/email_base.html` / `.txt`.
 
 ## Market data
 

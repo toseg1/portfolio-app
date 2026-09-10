@@ -107,7 +107,9 @@ timezone-aware UTC.
 
 **Python** — `snake_case`, PEP 8, ruff, type hints on all public functions. Django apps
 mirror the module list: `accounts`, `advisors`, `portfolio`, `instruments`, `reference`,
-`fees`, `analytics`, `reports`, `imports`, `realestate`, `billing`.
+`fees`, `analytics`, `reports`, `imports`, `realestate`, `billing`. `notifications`
+(email sending, ADR-029) is the one app outside that list, added by asking first —
+see `backend/CLAUDE.md`.
 
 **TypeScript** — `camelCase` variables, `PascalCase` components and types, one component
 per file. Money is always a `string`.

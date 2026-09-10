@@ -1,0 +1,7 @@
+{% load i18n %}{% blocktranslate %}This email is informational and is not personalised investment advice.{% endblocktranslate %}
+{% if legal_entity_name %}
+{{ legal_entity_name }}{% if legal_entity_address %} - {{ legal_entity_address }}{% endif %}
+{% if cif_registration_number %}{% translate "CIF registration:" %} {{ cif_registration_number }}{% endif %}
+{% if orias_number %}ORIAS: {{ orias_number }}{% endif %}
+{% endif %}
+{% if unsubscribe_url %}{% translate "Unsubscribe" %}: {{ unsubscribe_url }}{% endif %}
